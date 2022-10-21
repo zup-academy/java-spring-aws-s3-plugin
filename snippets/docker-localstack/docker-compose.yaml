@@ -1,0 +1,25 @@
+version: '3'
+services:
+    localstack:
+        container_name: localstack
+        image: localstack/localstack
+        ports:
+            - "127.0.0.1:4566:4566"            # LocalStack Gateway
+            - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+            - "127.0.0.1:53:53"                # DNS config (only required for Pro)
+            - "127.0.0.1:53:53/udp"            # DNS config (only required for Pro)
+            - "127.0.0.1:443:443"
+        environment:
+            - SERVICES=s3
+            - DEBUG=1
+            - DEFAULT_REGION=eu-west-1
+            - AWS_DEFAULT_REGION=eu-west-1
+            - AWS_ACCESS_KEY_ID=localstackAccessKeyId
+            - AWS_SECRET_ACCESS_KEY=localstackSecretAccessKey
+            - USE_LIGHT_IMAGE=1
+            - DATA_DIR=/tmp/localstack/data
+            - PORT_WEB_UI=8080
+            - DOCKER_HOST=unix:///var/run/docker.sock
+        volumes:
+            - "./.localstack:/tmp/localstack"
+            - "/var/run/docker.sock:/var/run/docker.sock"

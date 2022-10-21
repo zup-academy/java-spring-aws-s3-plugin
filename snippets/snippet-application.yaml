@@ -1,0 +1,20 @@
+
+cloud:
+    aws:
+        credentials:
+            access-key: localstackAccessKeyId
+            secret-key: localstackSecretAccessKey
+        region:
+            static: eu-west-1
+            auto: false
+        stack:
+            auto: false
+        s3:
+            bucket-name: my-bucket
+            endpoint: http://127.0.0.1:4566
+
+
+logging:
+    level:
+        com.amazonaws.services.s3: debug
+        com.amazonaws.util.EC2MetadataUtils: error
