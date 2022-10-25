@@ -1,24 +1,27 @@
-package {{directory_path_code}}.samples.aws.s3;
+package {{directory_path_code}}.samples.aws.s3.user;
 
-import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import {{directory_path_code}}.samples.aws.s3.base.S3IntegrationTest;
 
-import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-class S3FileRepositoryTest extends S3IntegrationTest {
+
+class S3PhotoStorageTest extends S3IntegrationTest {
     @Autowired
-    private S3FileRepository s3FileRepository;
+    private S3PhotoStorage s3PhotoStorage;
 
     @Autowired
     private AmazonS3Client s3Client;
@@ -26,63 +29,51 @@ class S3FileRepositoryTest extends S3IntegrationTest {
     @Value("${cloud.aws.s3.bucket-name}")
     private String bucket;
 
-    @Value("classpath:/uploads/myreport.txt")
-    private File fileToUpload;
+    @Value("classpath:/uploads/spring.png")
+    private Resource fileToUpload;
+
+    private String FILE_KEY;
 
     @BeforeEach
     void setUp() {
         s3Client.createBucket(bucket);
+        this.FILE_KEY = format("img/%s", fileToUpload.getFilename());
     }
 
     @AfterEach
     void tearDown() {
-        s3Client.deleteObject(bucket, fileToUpload.getName());
+        s3Client.deleteObject(bucket, FILE_KEY);
         s3Client.deleteBucket(bucket);
     }
 
     @Test
     @DisplayName("must upload the file")
-    void t1() {
+    void t1() throws IOException {
 
-        String key = fileToUpload.getName();
-        s3FileRepository.uploadFile(fileToUpload);
+        UploadPhotoRequest uploadPhotoRequest = new UploadPhotoRequest(fileToUpload.getInputStream(), fileToUpload.getFilename());
+        s3PhotoStorage.upload(uploadPhotoRequest);
 
-        boolean exist = s3Client.doesObjectExist(bucket, key);
+        boolean exist = s3Client.doesObjectExist(bucket, FILE_KEY);
 
         assertTrue(exist,
                 "Deveria existir o arquivo");
     }
 
-    @Test
-    @DisplayName("should not upload a non-existent file")
-    void t2() {
-        //scenary
-        String key = "404.txt";
-
-        //action and validation
-        SdkClientException sdkClientException = assertThrows(SdkClientException.class, () -> {
-            s3FileRepository.uploadFile(new File(key));
-        });
-        
-        assertThat(sdkClientException)
-                .hasMessageContaining("Unable to calculate MD5 hash: 404.txt");
-    }
 
     @Test
     @DisplayName("must create the file download url")
-    void t3() {
+    void t3() throws IOException {
         //scenary
-        String key = fileToUpload.getName();
-        s3Client.putObject(bucket, key, fileToUpload);
+        s3Client.putObject(bucket, FILE_KEY, fileToUpload.getInputStream(), new ObjectMetadata());
 
         // action
-        URL urlDownloadObject = s3FileRepository.getUrlDownloadObject(key);
+        URL urlDownloadObject = s3PhotoStorage.getUrlImage(FILE_KEY);
 
         //validation
         assertThat(urlDownloadObject)
                 .isNotNull()
                 .asString()
-                .contains(bucket, key);
+                .contains(bucket, FILE_KEY);
     }
 
     @Test
@@ -93,7 +84,7 @@ class S3FileRepositoryTest extends S3IntegrationTest {
 
         //action and validation
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            s3FileRepository.getUrlDownloadObject(keyNotExist);
+            s3PhotoStorage.getUrlImage(keyNotExist);
         });
 
         assertThat(exception)
@@ -102,17 +93,16 @@ class S3FileRepositoryTest extends S3IntegrationTest {
 
     @Test
     @DisplayName("must delete an object")
-    void t5() {
+    void t5() throws IOException {
         //scenary
-        String key = fileToUpload.getName();
-        s3Client.putObject(bucket, key, fileToUpload);
+        s3Client.putObject(bucket, FILE_KEY, fileToUpload.getInputStream(), new ObjectMetadata());
 
         //action
-        s3FileRepository.deleteObject(key);
+        s3PhotoStorage.delete(FILE_KEY);
 
         //validation
         assertFalse(
-                s3Client.doesObjectExist(bucket,key)
+                s3Client.doesObjectExist(bucket, FILE_KEY)
         );
 
     }
@@ -125,11 +115,12 @@ class S3FileRepositoryTest extends S3IntegrationTest {
 
         //action and validation
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            s3FileRepository.deleteObject(keyNotExist);
+            s3PhotoStorage.delete(keyNotExist);
         });
 
         assertThat(exception)
                 .hasMessageContaining("Object not exist!");
 
     }
+
 }

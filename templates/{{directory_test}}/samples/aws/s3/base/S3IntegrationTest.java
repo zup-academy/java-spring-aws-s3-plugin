@@ -1,6 +1,7 @@
 package {{directory_path_code}}.samples.aws.s3.base;
 
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -14,7 +15,7 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 
 @SpringBootTest
 @ActiveProfiles("test")
-@Testcontainers
+@Testcontainers @DirtiesContext
 public class S3IntegrationTest {
     private static DockerImageName LOCALSTACK_IMAGE = DockerImageName.parse("localstack/localstack");
 
@@ -23,7 +24,7 @@ public class S3IntegrationTest {
             .withServices(S3);
 
     /**
-     * Just configures Localstack's S3 server endpoint in the application
+     * Just configures Localstack's SQS server endpoint in the application
      */
     @DynamicPropertySource
     static void registerSqsProperties(DynamicPropertyRegistry registry) {
