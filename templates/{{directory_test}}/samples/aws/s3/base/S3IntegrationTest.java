@@ -11,7 +11,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -24,11 +23,11 @@ public class S3IntegrationTest {
             .withServices(S3);
 
     /**
-     * Just configures Localstack's SQS server endpoint in the application
+     * Just configures Localstack's S3 server endpoint in the application
      */
     @DynamicPropertySource
-    static void registerSqsProperties(DynamicPropertyRegistry registry) {
+    static void registerS3Properties(DynamicPropertyRegistry registry) {
         registry.add("cloud.aws.s3.endpoint",
-                () -> LOCALSTACK_CONTAINER.getEndpointOverride(SQS).toString());
+                () -> LOCALSTACK_CONTAINER.getEndpointOverride(S3).toString());
     }
 }
