@@ -1,0 +1,4 @@
+        
+        s3:
+            bucket-name: my-bucket
+            endpoint: http://127.0.0.1:4566

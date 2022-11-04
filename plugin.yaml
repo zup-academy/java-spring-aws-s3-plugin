@@ -59,7 +59,22 @@ hooks:
           snippet: snippets/snippet-application.yaml
           when:
             not-exists-snippet: snippets/snippet-application.yaml
-
+      - search:
+          string: "aws:"
+          insert-after:
+            snippet: snippets/snippet-s3-application.yaml
+          when:
+            not-exists: "s3:"
+      - insert:
+          line: -1
+          value: "\nlogging.level.com.amazonaws.services.s3: debug"
+          when:
+            not-exists: "logging.level.com.amazonaws.services.s3: debug"
+      - insert:
+          line: -1
+          value: "\nlogging.level.com.amazonaws.util.EC2MetadataUtils: error"
+          when:
+            not-exists: "logging.level.com.amazonaws.util.EC2MetadataUtils: error"
   ##
   # Create or edit docker-compose.yaml
   ##
