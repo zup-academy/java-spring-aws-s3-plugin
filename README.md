@@ -34,7 +34,7 @@ git status
 
 Nice! You're ready for production I guess 🥳
 
-[See here the benefits and how you can get the most out of the Java Spring AWS S3 Plugin](http://video-will-be-published.soon/)
+[See here the benefits and how you can get the most out of the Java Spring AWS S3 Plugin](https://youtu.be/mIp44nnWVpo)
 
 ## Support
 
